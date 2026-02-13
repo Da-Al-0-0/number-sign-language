@@ -288,7 +288,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 // Registers your sw.js file so the phone knows it is a safe PWA
-                navigator.serviceWorker.register('sw.js')
+                navigator.serviceWorker.register('./sw.js')
                     .then((reg) => console.log('Service worker registered.', reg))
                     .catch((err) => console.log('Service worker not registered.', err));
             });
@@ -297,4 +297,5 @@
 
 </body>
 </html>
+
 
