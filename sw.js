@@ -1,9 +1,17 @@
-// A simple service worker to pass the PWA install criteria
+// sw.js
+
+// 1. The phone installs the service worker
 self.addEventListener('install', (e) => {
-    console.log('[Service Worker] Installed');
+    console.log('Service Worker: Installed');
 });
 
+// 2. The phone activates it
+self.addEventListener('activate', (e) => {
+    console.log('Service Worker: Activated');
+});
+
+// 3. THIS IS THE SECRET PASSCODE! 
+// Mobile browsers require a 'fetch' listener to exist before they allow you to install the app.
 self.addEventListener('fetch', (e) => {
-    // For now, we just let the app fetch data normally
-    e.respondWith(fetch(e.request));
+    // We are leaving this blank for now, which is all the phone needs to see!
 });
