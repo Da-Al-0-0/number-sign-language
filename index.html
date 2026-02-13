@@ -252,9 +252,8 @@
             onFrame: async () => {
                 await hands.send({image: videoElement});
             },
-            facingMode: 'user', // SELFIE CAM FIX: Forces mobile phones to use the front-facing camera
-            width: 480, // Request the ideal camera resolution
-            height: 360
+            facingMode: 'user' 
+            // We removed width and height so the phone uses its natural shape!
         });
         camera.start();
 
@@ -294,3 +293,4 @@
 
 </body>
 </html>
+
