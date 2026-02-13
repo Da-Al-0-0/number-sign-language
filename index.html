@@ -16,43 +16,71 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 
     <style>
+        /* =========================================================
+           CSS STYLING & LAYOUT
+           ========================================================= */
+        /* Basic reset to ensure the app looks the same on all browsers */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nunito', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        /* The main background gradient for the whole app */
         body { background: linear-gradient(160deg, #e3b6f5 0%, #879bde 45%, #4c9db0 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; color: white; overflow: hidden; }
         
+        /* The container that holds the app, making it look like a mobile screen even on desktop */
         #app-container { width: 100%; max-width: 400px; height: 100vh; max-height: 850px; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* The subtle dotted pattern overlay in the background */
         .bg-pattern { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(circle at center, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 30px 30px; opacity: 0.3; z-index: 0; pointer-events: none; }
 
+        /* Screen transitions: Hides inactive screens by default */
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; z-index: 1; transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0; pointer-events: none; transform: translateX(20px); }
+        
+        /* When '.active' is added via JS, the screen slides in and becomes clickable */
         .screen.active { opacity: 1; pointer-events: auto; transform: translateX(0); }
 
+        /* Welcome Screen specific styling */
         #welcome-screen { justify-content: center; text-align: center; }
         .logo-box { width: 90px; height: 90px; background-color: #f0fdf4; border-radius: 20px; display: flex; justify-content: center; align-items: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); font-size: 45px;}
         .welcome-title { font-size: 26px; font-weight: 800; line-height: 1.2; margin-bottom: 30px; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
         .welcome-subtitle { font-size: 14px; font-weight: 500; line-height: 1.5; margin-bottom: 80px; color: rgba(255, 255, 255, 0.9); }
         
+        /* Primary button styling (Get Started / Start Detection) */
         .primary-btn { background-color: #1e1136; color: white; border: none; padding: 16px 0; width: 85%; border-radius: 30px; font-size: 14px; font-weight: 800; letter-spacing: 1px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: transform 0.1s; }
-        .primary-btn:active { transform: scale(0.97); }
+        .primary-btn:active { transform: scale(0.97); } /* Creates a "push down" effect when clicked */
 
+        /* Detector Screen specific styling */
         #detector-screen { justify-content: flex-start; padding-top: 50px; }
         .header-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 30px; color: rgba(255, 255, 255, 0.85); line-height: 1.2; }
+        
+        /* Glassmorphism effect for the main translation box */
         .detector-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 20px; width: 100%; padding: 25px 20px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
 
+        /* Camera feed container */
         .camera-feed { width: 100%; height: 200px; background-color: rgba(0, 0, 0, 0.5); border: 3px solid white; border-radius: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 25px; position: relative; overflow: hidden; }
+        
+        /* Hides the raw video feed, we only show the canvas where the skeleton is drawn */
         .input_video { display: none; }
+        
+        /* Flips the canvas horizontally so it acts like a mirror for the user */
         .output_canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .loading-text { position: absolute; z-index: 10; font-size: 14px; font-weight: bold; text-align: center; color: white;}
 
+        /* Output text styling */
         .output-label { font-size: 13px; align-self: flex-start; margin-bottom: 15px; color: rgba(255, 255, 255, 0.9); }
         .output-container { width: 100%; background-color: white; border-radius: 30px; display: flex; justify-content: space-between; align-items: center; padding: 8px 8px 8px 20px; margin-bottom: 30px; }
         .output-text { color: #333; font-size: 14px; font-weight: 700; }
+        
+        /* Secondary buttons (Clear and Back) */
         .clear-btn { background: linear-gradient(135deg, #62c370, #3fb050); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; color: white; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .back-btn { position: flex-start; bottom: 20px; left: 10px; width: 40px; height: 40px; background-color: white; border: none; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #555; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15); z-index: 10; }
+        
+        /* FIXED MOBILE BACK BUTTON: Moved directly beneath the card so it doesn't get hidden by phone menus */
+        .back-btn { align-self: flex-start; margin-top: 20px; margin-left: 10px; width: 40px; height: 40px; background-color: white; border: none; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #555; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15); z-index: 10; }
     </style>
 </head>
 <body>
 
     <div id="app-container">
         <div class="bg-pattern"></div>
+        
         <div id="welcome-screen" class="screen active">
             <div class="logo-box"><span>🤟</span></div>
             <h1 class="welcome-title">Welcome to<br>AI Sign Language<br>Detector</h1>
@@ -63,9 +91,10 @@
         <div id="detector-screen" class="screen">
             <h2 class="header-title">AI Sign Language<br>Detector</h2>
             <div class="detector-card">
+                
                 <div class="camera-feed">
                     <span class="loading-text" id="loading-msg">Waiting for Camera...<br>(Please allow access)</span>
-                    <video class="input_video"></video>
+                    <video class="input_video" playsinline autoplay muted></video>
                     <canvas class="output_canvas" width="480" height="360"></canvas>
                 </div>
 
@@ -78,70 +107,88 @@
 
                 <button class="primary-btn" id="btn-start-detection" style="width: 100%;">START AI DETECTION</button>
             </div>
+            
             <button id="btn-back" class="back-btn">❮</button>
         </div>
     </div>
 
     <script>
+        // 1. Grab HTML elements so we can control them with JavaScript
         const getStartedBtn = document.getElementById('btn-get-started');
         const backBtn = document.getElementById('btn-back');
         const welcomeScreen = document.getElementById('welcome-screen');
         const detectorScreen = document.getElementById('detector-screen');
 
+        // 2. Navigation: Switch to Detector Screen
         getStartedBtn.addEventListener('click', () => {
             welcomeScreen.classList.remove('active');
             detectorScreen.classList.add('active');
         });
 
+        // 3. Navigation: Switch back to Welcome Screen
         backBtn.addEventListener('click', () => {
             detectorScreen.classList.remove('active');
             welcomeScreen.classList.add('active');
         });
 
+        // 4. Set up Camera and Output variables
         const videoElement = document.querySelector('.input_video');
         const canvasElement = document.querySelector('.output_canvas');
         const canvasCtx = canvasElement.getContext('2d');
         const loadingMsg = document.getElementById('loading-msg');
         const translationOutput = document.getElementById('translation-output');
         const btnStart = document.getElementById('btn-start-detection');
-        let isDetecting = false;
+        let isDetecting = false; // Tracks if the AI should be analyzing frames
 
+        // 5. Load the TensorFlow AI Model
         let signModel;
-        const class_list = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+        const class_list = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']; // The answers the AI can give
 
         async function loadAI() {
             try {
+                // Fetches your specific AI brain from the folder (model.json)
                 signModel = await tf.loadLayersModel('./model.json');
                 console.log("AI Model Loaded Successfully!");
             } catch (error) {
                 console.error("Error loading model:", error);
             }
         }
-        loadAI();
+        loadAI(); // Run the loading function immediately on startup
 
-        let lastSendTime = 0;
+        let lastSendTime = 0; // Used to prevent the AI from running too fast and crashing the browser
 
+        // 6. The Core AI Loop: This runs every time the camera sees a new frame
         async function onResults(results) {
-            loadingMsg.style.display = "none";
+            loadingMsg.style.display = "none"; // Hide loading text once video starts
 
+            // MOBILE STRETCH FIX: Automatically adjust the canvas shape to match the phone's camera
+            // This stops the tall mobile video from being squished into a wide box!
+            canvasElement.width = results.image.width;
+            canvasElement.height = results.image.height;
+
+            // Draw the raw camera image to the canvas
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
             canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
+            // If a hand is detected AND the user clicked "Start Detection"
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0 && isDetecting) {
-                const hand = results.multiHandLandmarks[0];
+                const hand = results.multiHandLandmarks[0]; // Isolate the first hand seen
                 
+                // Draw the green skeleton and red dots over the hand
                 drawConnectors(canvasCtx, hand, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 3});
                 drawLandmarks(canvasCtx, hand, {color: '#FF0000', lineWidth: 1});
                 
+                // Throttle processing: Only run the heavy math every 300 milliseconds
                 const now = Date.now();
                 if (now - lastSendTime > 300) {
                     lastSendTime = now;
                     
                     let coordinate_xy = [];
                     
-                    // FIXED: We perfectly mirror the camera, just like PictoBlox does by default
+                    // Format the 21 points for the AI (scaled exactly to 480x360)
                     for (let i = 0; i < 21; i++) {
+                        // MIRROR FIX: Flips the X coordinate so it matches how you trained it in PictoBlox
                         let mirroredX = 1.0 - hand[i].x; 
                         
                         let x = Math.round(mirroredX * 480);
@@ -150,11 +197,16 @@
                         coordinate_xy.push(y);
                     }
 
+                    // If the model successfully loaded, let's predict the number!
                     if (signModel) {
+                        // Convert coordinates into a Tensor (a matrix format the AI understands)
                         const inputTensor = tf.tensor2d([coordinate_xy]);
-                        const prediction = signModel.predict(inputTensor);
-                        const predictArray = await prediction.data();
                         
+                        // Ask the AI to guess the number based on the coordinates
+                        const prediction = signModel.predict(inputTensor);
+                        const predictArray = await prediction.data(); // Get the probability scores
+                        
+                        // Find which number got the highest score
                         let maxIndex = 0;
                         let maxValue = predictArray[0];
                         for (let i = 1; i < predictArray.length; i++) {
@@ -164,26 +216,30 @@
                             }
                         }
                         
+                        // Print the winning number to the screen!
                         translationOutput.innerText = "Number: " + class_list[maxIndex];
-                        translationOutput.style.color = "#3fb050";
+                        translationOutput.style.color = "#3fb050"; // Turn text green
                         translationOutput.style.fontSize = "18px";
                         
+                        // Clear the memory so the phone doesn't freeze up
                         inputTensor.dispose();
                     }
                 }
             } else if (isDetecting) {
+                // If detection is ON but no hand is found, tell the user
                 translationOutput.innerText = "No hand in frame...";
                 translationOutput.style.color = "#999";
             }
-            canvasCtx.restore();
+            canvasCtx.restore(); // Reset canvas for the next frame
         }
 
+        // 7. Initialize Google MediaPipe Hands
         const hands = new Hands({locateFile: (file) => {
             return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
         }});
 
         hands.setOptions({
-            maxNumHands: 1, 
+            maxNumHands: 1, // Only look for 1 hand (makes the app run faster)
             modelComplexity: 1,
             minDetectionConfidence: 0.5,
             minTrackingConfidence: 0.5
@@ -191,28 +247,32 @@
         
         hands.onResults(onResults);
 
+        // 8. Turn on the Web Camera
         const camera = new Camera(videoElement, {
             onFrame: async () => {
                 await hands.send({image: videoElement});
             },
-            width: 480, // FIXED: Forces the exact 480x360 ratio you trained the AI with
+            facingMode: 'user', // SELFIE CAM FIX: Forces mobile phones to use the front-facing camera
+            width: 480, // Request the ideal camera resolution
             height: 360
         });
         camera.start();
 
+        // 9. App Controls (Buttons)
         btnStart.addEventListener('click', () => {
-            isDetecting = !isDetecting;
+            isDetecting = !isDetecting; // Flip the on/off switch
             if(isDetecting) {
                 btnStart.innerText = "STOP DETECTION";
-                btnStart.style.backgroundColor = "#c0392b"; 
+                btnStart.style.backgroundColor = "#c0392b"; // Turn button red
                 translationOutput.innerText = "Analyzing gestures...";
             } else {
                 btnStart.innerText = "START AI DETECTION";
-                btnStart.style.backgroundColor = "#1e1136";
+                btnStart.style.backgroundColor = "#1e1136"; // Turn button purple
                 translationOutput.innerText = "Detection Paused.";
             }
         });
 
+        // Clear output button logic
         document.getElementById('btn-clear').addEventListener('click', () => {
             translationOutput.innerText = "Sign language interpretation...";
             translationOutput.style.color = "#999";
@@ -221,8 +281,10 @@
     </script>
 
     <script>
+        // Checks if the browser supports Service Workers
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
+                // Registers your sw.js file so the phone knows it is a safe PWA
                 navigator.serviceWorker.register('sw.js')
                     .then((reg) => console.log('Service worker registered.', reg))
                     .catch((err) => console.log('Service worker not registered.', err));
@@ -231,6 +293,4 @@
     </script>
 
 </body>
-
 </html>
-
