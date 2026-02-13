@@ -1,0 +1,16 @@
+{
+  "name": "AI Sign Language Detector",
+  "short_name": "Sign AI",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e3b6f5",
+  "theme_color": "#d9b6f1",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
