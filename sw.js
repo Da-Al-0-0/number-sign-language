@@ -7,7 +7,11 @@ const urlsToCache = [
   '/number-sign-language/manifest.json',
   '/number-sign-language/icon.png',
   '/number-sign-language/model.json',
-  '/number-sign-language/weights.bin'
+  'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs',
+  'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js',
+  'https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js',
+  'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js',
+  'https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js'
 ];
 
 // 2. INSTALL EVENT: Tell the phone to download the core files
@@ -75,3 +79,4 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
