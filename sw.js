@@ -56,7 +56,7 @@ self.addEventListener('fetch', (event) => {
         return fetch(event.request).then(
           (networkResponse) => {
             // Make sure it's a valid file before we save it
-            if(!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+            if(!networkResponse || networkResponse.status !== 200) {
               return networkResponse;
             }
 
@@ -79,4 +79,5 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
 
