@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sign-ai-cache-v1';
+const CACHE_NAME = 'sign-ai-cache-v2';
 
 // 1. The exact files we want to download immediately
 const urlsToCache = [
